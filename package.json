@@ -1,0 +1,14 @@
+{
+  "name": "prayers",
+  "type": "module",
+  "scripts": {
+    "json": "bun ./src/json.ts",
+    "html": "bun ./src/html.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
