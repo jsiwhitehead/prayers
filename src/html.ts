@@ -2,8 +2,18 @@
 
 // ---- Types matching your data ----
 
-type InfoContent = {
-  type: "info";
+const CATEGORY_ORDER = [
+  "Praise and Devotion",
+  "Bestowal and Nearness",
+  "Unity and Oneness",
+  "Teaching and Service",
+  "Protection and Forgiveness",
+];
+
+const AUTHOR_ORDER = ["Bahá’u’lláh", "The Báb", "‘Abdu’l‑Bahá"];
+
+type TypeContent = {
+  type: "info" | "call";
   text: string;
 };
 
@@ -12,10 +22,10 @@ type LinesContent = {
   lines: number[];
 };
 
-type Content = string | InfoContent | LinesContent;
+type Content = string | TypeContent | LinesContent;
 
 type Prayer = {
-  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l-Bahá";
+  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l‑Bahá";
   content: Content[];
 };
 
@@ -65,9 +75,14 @@ function renderPrayer(prayer: Prayer): string {
 }
 
 function renderCategory(name: string, prayers: Prayer[]): string {
-  const prayersHtml = prayers.map(renderPrayer).join("\n");
+  const sortedPrayers = [...prayers].sort((a, b) => {
+    const indexA = AUTHOR_ORDER.indexOf(a.prayer);
+    const indexB = AUTHOR_ORDER.indexOf(b.prayer);
+    return indexA - indexB;
+  });
 
-  // `open` means categories are expanded by default
+  const prayersHtml = sortedPrayers.map(renderPrayer).join("\n");
+
   return `
     <details class="category">
       <summary class="category-title">${escapeHtml(name)}</summary>
@@ -78,6 +93,18 @@ function renderCategory(name: string, prayers: Prayer[]): string {
 
 function renderPage(prayersByCategory: PrayersByCategory): string {
   const categoriesHtml = Object.entries(prayersByCategory)
+    .sort(([a], [b]) => {
+      const indexA = CATEGORY_ORDER.indexOf(a);
+      const indexB = CATEGORY_ORDER.indexOf(b);
+
+      // Categories that exist in CATEGORY_ORDER come first
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+
+      // For unexpected categories: fallback to alphabetical
+      return a.localeCompare(b);
+    })
     .map(([categoryName, prayers]) => renderCategory(categoryName, prayers))
     .join("\n");
 
@@ -87,7 +114,6 @@ function renderPage(prayersByCategory: PrayersByCategory): string {
     <meta charset="utf-8" />
     <title>Prayers – Adversity</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- styles.css should live in ./src/styles.css next to index.html -->
     <link href="./styles.css" rel="stylesheet" />
   </head>
   <body>

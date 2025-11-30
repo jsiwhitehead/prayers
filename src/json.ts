@@ -1,8 +1,8 @@
 import { writeFileSync } from "node:fs";
 import rawPrayers from "../prayers.json" assert { type: "json" };
 
-type InfoContent = {
-  type: "info";
+type TypeContent = {
+  type: "info" | "call";
   text: string;
 };
 
@@ -11,10 +11,10 @@ type LinesContent = {
   lines: number[];
 };
 
-type Content = string | InfoContent | LinesContent;
+type Content = string | TypeContent | LinesContent;
 
 type Prayer = {
-  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l-Bahá";
+  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l‑Bahá";
   content: Content[];
 };
 
@@ -44,6 +44,7 @@ const categoryTests: Record<string, (string | RegExp)[]> = {
     "me and this servant",
     "in a mountain",
     "the exile",
+    "one slave",
     /this (association|congregation|prison|mountain|city)/,
   ],
   Obligatory: ["created me to know", "whoso wisheth"],
@@ -188,127 +189,124 @@ const adversityTests: Record<string, (string | RegExp)[]> = {
     "swords",
     "onslaught of the people",
   ],
-  "Trials and Adversity": [
+  "Protection and Forgiveness": [
     "adversities",
     "adversity",
     "tribulations",
     "trials",
-    "tests",
+    "violent tests",
     "difficulties",
     "sword",
     "when sorrows",
     "seized with alarm",
   ],
-  "Sorrow and Anguish": [
-    "grief",
-    "anguish",
-    "misery",
-    "despair",
-    "sorrow",
-    "affliction",
-    "gloom",
-  ],
-  Unity: [
-    /unite (us|all|in|together|and)/,
+  "Unity and Oneness": [
+    /unite (us|all|in|together|and|the)/,
     "unity of its peoples",
     "enable all the peoples",
-    "embrace",
+    "single great assemblage",
     "sea of thy oneness",
+    "gather together",
   ],
-  "Sin and Transgression": [
-    "sins",
-    "sin",
-    "trespasses",
-    "forgive",
-    "corrupt",
-    "repugnant",
-  ],
-  "Protection and Guidance": [
-    "shield",
-    "armour",
-    "onslaught",
-    "protect",
-    "safe",
-  ],
-  Teaching: [
+  "Teaching and Service": [
     "exalt thy",
     "speak forth",
     "to spread",
     "to teach",
     "to proclaim",
+    "to enrapture",
+    "to deliver them",
     "summon all",
     "speak out",
     "speak of",
+    "my speech",
+    "unloose his tongue",
+    "with thy mention",
     "called out",
     "promotion",
+    "diffusion",
     "proffer",
-    "call in",
+    "to heal",
+    "leaders unto thee",
+    "give the glad tidings",
     "illumination of divine teachings",
-  ],
-  Service: ["serve", "serving", "service", "affairs"],
-  Inaccessible: [
-    "comprehend",
-    "comprehended",
-    "sing",
-    "fathom",
-    "perplexed",
-    "make mention",
-  ],
-  Recognising: [
-    "return unto thee",
+    "them to prevail",
+    "proclaim thy",
+    "raise thy",
+    "lamps",
+    "banner",
+    "emblems",
+    "arise",
+    "arisen",
+    "affairs",
+
     "faces of thy servants",
-    "gather together",
-    "in every heart",
+    "call thou to life",
     "inform the hearts",
     "dispel the mists",
     "directing their gaze",
     "power to approach",
     "save them",
     "quicken them",
+    "guide thy servants",
+    "repent before the door",
   ],
-  Illumination: [
-    "lamps",
-    "rays",
-    "minaret",
-    "empower",
-    "signs of",
-    "to deliver them",
+  "Protection and Forgiveness 2": [
+    "trespasses",
+    "wash away",
+    "sinner",
+    "sinners",
+    "wretched state",
+    "forgive them",
+
+    "shield",
+    "protect",
+    "protection",
+    "safe",
+    "shelter",
+    "no harm",
+
+    "remedy",
+    "affliction",
+    "balm",
+
+    "misery",
+    "grief",
+    "sorrow",
+    "gloom",
+    "anguish",
+    "corrupt",
+    "passion",
   ],
-  Victory: ["prevail", "render"],
-  "Spiritual Growth": ["adorn", "attire", "grow", "clothe thy", "pure heart"],
-  "Inspiration and Aid": [
-    "enkindlement",
-    "enkindled",
-    "new life",
-    "aid",
-    "inspire",
-    "lead",
-    "revived",
+  "Bestowal and Nearness": [
+    /bestow (upon|on|thy)/,
+    "bestowed",
+    "give",
+    "adorn",
+    "attire",
+    "clothe",
+    "rain",
+    "supply",
+    "gladden",
+    "destine",
     "vivified",
-    "open the eyes",
-    "walk in glory",
-    "become fountains",
-    "infuse",
   ],
-  Blessing: [
-    "ordain",
-    "attain",
-    "grant",
-    "gifts",
-    "show me",
-    "sanctify",
-    "detached",
-    "presence my drink",
-    "sufficing",
-    "withdrawn",
-    "detach",
-    "affections",
-    "naught",
-    "remembrance",
-    "clung",
-    "hearkened",
+  "Praise and Devotion": [
+    "comprehend",
+    "powerlessness",
+    "perplexed",
+    "failed to know",
+
+    "o god my god my beloved",
+    "all thy lights",
+    "god sufficeth",
+    "blessed is the spot",
+    "god testifieth",
+    "thine in truth",
+    "whomsoever thou willest",
+    "sacred scriptures",
+    "show thyself",
   ],
-  "Glory and Devotion": [""],
 };
 
 const adversityEntries = Object.entries(adversityTests);
@@ -316,8 +314,6 @@ const adversityEntries = Object.entries(adversityTests);
 const adversityCategorised: Record<string, Prayer[]> = Object.fromEntries(
   adversityEntries.map(([level]) => [level, [] as Prayer[]])
 );
-
-const adversityUncategorised: Prayer[] = [];
 
 for (const prayer of uncategorised) {
   const text = prayer.content
@@ -344,9 +340,37 @@ for (const prayer of uncategorised) {
   }
 
   if (!assignedLevel) {
-    adversityUncategorised.push(prayer);
+    adversityCategorised["Bestowal and Nearness"]!.push(prayer);
   }
 }
+
+for (const cat of ["Teaching and Service", "Bestowal and Nearness"]) {
+  for (const p of adversityCategorised[cat]!) {
+    p.content = p.content.filter((a) => {
+      if (typeof a !== "string" && "type" in a && a.type === "info") {
+        return false;
+      }
+      return true;
+    });
+  }
+}
+
+adversityCategorised["Protection and Forgiveness"]?.push(
+  ...adversityCategorised["Protection and Forgiveness 2"]!
+);
+delete adversityCategorised["Protection and Forgiveness 2"];
+
+const getContentText = (c: Content): string => {
+  if (typeof c === "string") return c;
+  return c.text;
+};
+
+const getPrayerTextLength = (p: Prayer): number =>
+  p.content.reduce((sum, item) => sum + getContentText(item).length, 0);
+
+adversityCategorised["Protection and Forgiveness"] = [
+  ...adversityCategorised["Protection and Forgiveness"]!,
+].sort((a, b) => getPrayerTextLength(a) - getPrayerTextLength(b));
 
 writeFileSync(
   new URL("./prayers-categorised.json", import.meta.url),
