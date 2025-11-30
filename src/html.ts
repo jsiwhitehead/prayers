@@ -5,7 +5,6 @@
 const CATEGORY_ORDER = [
   "Praise and Devotion",
   "Bestowal and Nearness",
-  "Unity and Oneness",
   "Teaching and Service",
   "Protection and Forgiveness",
 ];
@@ -92,21 +91,10 @@ function renderCategory(name: string, prayers: Prayer[]): string {
 }
 
 function renderPage(prayersByCategory: PrayersByCategory): string {
-  const categoriesHtml = Object.entries(prayersByCategory)
-    .sort(([a], [b]) => {
-      const indexA = CATEGORY_ORDER.indexOf(a);
-      const indexB = CATEGORY_ORDER.indexOf(b);
-
-      // Categories that exist in CATEGORY_ORDER come first
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-
-      // For unexpected categories: fallback to alphabetical
-      return a.localeCompare(b);
-    })
-    .map(([categoryName, prayers]) => renderCategory(categoryName, prayers))
-    .join("\n");
+  const categoriesHtml = CATEGORY_ORDER.map((categoryName) => {
+    const prayers = prayersByCategory[categoryName] ?? [];
+    return renderCategory(categoryName, prayers);
+  }).join("\n");
 
   return `<!doctype html>
 <html lang="en">

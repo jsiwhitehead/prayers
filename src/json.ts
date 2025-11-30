@@ -200,14 +200,6 @@ const adversityTests: Record<string, (string | RegExp)[]> = {
     "when sorrows",
     "seized with alarm",
   ],
-  "Unity and Oneness": [
-    /unite (us|all|in|together|and|the)/,
-    "unity of its peoples",
-    "enable all the peoples",
-    "single great assemblage",
-    "sea of thy oneness",
-    "gather together",
-  ],
   "Teaching and Service": [
     "exalt thy",
     "speak forth",
@@ -240,6 +232,11 @@ const adversityTests: Record<string, (string | RegExp)[]> = {
     "arisen",
     "affairs",
 
+    "recognise thy unity",
+    "uncover before them",
+    "brighten their eyes",
+    "unlock the gates",
+    "enable all the peoples",
     "faces of thy servants",
     "call thou to life",
     "inform the hearts",
@@ -306,6 +303,7 @@ const adversityTests: Record<string, (string | RegExp)[]> = {
     "whomsoever thou willest",
     "sacred scriptures",
     "show thyself",
+    "unity of its peoples",
   ],
 };
 
