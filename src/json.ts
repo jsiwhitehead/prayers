@@ -55,7 +55,7 @@ const categoryTests: Record<string, (string | RegExp)[]> = {
   "Naw‑Rúz": ["nawruz", "that day", "festival"],
   Fast: ["the fast"],
   Meeting: ["spiritual assembly", "councilchamber"],
-  "Ḥuqúqu’lláh": ["huquq", "contribute", "desireth to offer"],
+  "Ḥuqúqu’lláh": ["huquq", "desireth to offer"],
   Temple: ["edifice", "mashriquladhkar", "this temple"],
   Nations: ["government", "the rulers", /heart of the (king|sovereign)/],
   Departed: [
@@ -233,6 +233,7 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "affairs",
 
     "recognise thy unity",
+    "open the eyes",
     "uncover before them",
     "brighten their eyes",
     "unlock the gates",
@@ -260,7 +261,6 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "protect",
     "protection",
     "safe",
-    "shelter",
     "no harm",
 
     "remedy",
