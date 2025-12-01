@@ -32,7 +32,7 @@ type PrayersByCategory = Record<string, Prayer[]>;
 
 // ---- Paths ----
 
-const PRAYERS_JSON_PATH = "./src/prayers-adversity.json";
+const PRAYERS_JSON_PATH = "./src/prayers-themed.json";
 const OUTPUT_HTML_PATH = "./src/index.html";
 
 // ---- Helpers ----
@@ -65,9 +65,10 @@ function renderPrayer(prayer: Prayer): string {
 
   return `
     <article class="prayer">
-      <h3 class="prayer-title">${escapeHtml(prayer.prayer)}</h3>
       <div class="prayer-content">
         ${contentHtml}
+
+        <p class="prayer-author">—${escapeHtml(prayer.prayer)}</p>
       </div>
     </article>
   `;
@@ -107,10 +108,7 @@ function renderPage(prayersByCategory: PrayersByCategory): string {
   <body>
     <main class="page">
       <header class="page-header">
-        <h1 class="page-title">Prayers on Adversity</h1>
-        <p class="page-subtitle">
-          Categorised by theme, each section can be expanded or collapsed.
-        </p>
+        <h1 class="page-title">Bahá’í Prayers</h1>
       </header>
       <div id="app">
         ${categoriesHtml}

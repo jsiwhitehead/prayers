@@ -167,7 +167,7 @@ for (const prayer of prayers) {
   if (!assigned) uncategorised.push(prayer);
 }
 
-const adversityTests: Record<string, (string | RegExp)[]> = {
+const themeTests: Record<string, (string | RegExp)[]> = {
   "Oppression and Persecution": [
     "enemies",
     "adversaries",
@@ -307,10 +307,10 @@ const adversityTests: Record<string, (string | RegExp)[]> = {
   ],
 };
 
-const adversityEntries = Object.entries(adversityTests);
+const themeEntries = Object.entries(themeTests);
 
-const adversityCategorised: Record<string, Prayer[]> = Object.fromEntries(
-  adversityEntries.map(([level]) => [level, [] as Prayer[]])
+const themeCategorised: Record<string, Prayer[]> = Object.fromEntries(
+  themeEntries.map(([level]) => [level, [] as Prayer[]])
 );
 
 for (const prayer of uncategorised) {
@@ -324,26 +324,26 @@ for (const prayer of uncategorised) {
 
   let assignedLevel = false;
 
-  for (const [level, tests] of adversityEntries) {
+  for (const [level, tests] of themeEntries) {
     const matchesLevel = tests.some((test) => {
       if (test instanceof RegExp) return test.test(text);
       return new RegExp(`\\b${test}\\b`).test(text);
     });
 
     if (matchesLevel) {
-      adversityCategorised[level]!.push(prayer);
+      themeCategorised[level]!.push(prayer);
       assignedLevel = true;
       break;
     }
   }
 
   if (!assignedLevel) {
-    adversityCategorised["Bestowal and Nearness"]!.push(prayer);
+    themeCategorised["Bestowal and Nearness"]!.push(prayer);
   }
 }
 
 for (const cat of ["Teaching and Service", "Bestowal and Nearness"]) {
-  for (const p of adversityCategorised[cat]!) {
+  for (const p of themeCategorised[cat]!) {
     p.content = p.content.filter((a) => {
       if (typeof a !== "string" && "type" in a && a.type === "info") {
         return false;
@@ -353,10 +353,10 @@ for (const cat of ["Teaching and Service", "Bestowal and Nearness"]) {
   }
 }
 
-adversityCategorised["Protection and Forgiveness"]?.push(
-  ...adversityCategorised["Protection and Forgiveness 2"]!
+themeCategorised["Protection and Forgiveness"]?.push(
+  ...themeCategorised["Protection and Forgiveness 2"]!
 );
-delete adversityCategorised["Protection and Forgiveness 2"];
+delete themeCategorised["Protection and Forgiveness 2"];
 
 const getContentText = (c: Content): string => {
   if (typeof c === "string") return c;
@@ -366,8 +366,8 @@ const getContentText = (c: Content): string => {
 const getPrayerTextLength = (p: Prayer): number =>
   p.content.reduce((sum, item) => sum + getContentText(item).length, 0);
 
-adversityCategorised["Protection and Forgiveness"] = [
-  ...adversityCategorised["Protection and Forgiveness"]!,
+themeCategorised["Protection and Forgiveness"] = [
+  ...themeCategorised["Protection and Forgiveness"]!,
 ].sort((a, b) => getPrayerTextLength(a) - getPrayerTextLength(b));
 
 writeFileSync(
@@ -377,11 +377,9 @@ writeFileSync(
 );
 
 writeFileSync(
-  new URL("./prayers-adversity.json", import.meta.url),
-  JSON.stringify(adversityCategorised, null, 2),
+  new URL("./prayers-themed.json", import.meta.url),
+  JSON.stringify(themeCategorised, null, 2),
   "utf8"
 );
 
-console.log(
-  Object.entries(adversityCategorised).map((x) => [x[0], x[1].length])
-);
+console.log(Object.entries(themeCategorised).map((x) => [x[0], x[1].length]));
