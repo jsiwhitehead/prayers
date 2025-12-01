@@ -1,7 +1,10 @@
 (function () {
   function collapseAllPrayers() {
     const prayers = document.querySelectorAll(".prayer");
-    prayers.forEach((p) => p.classList.remove("expanded"));
+    prayers.forEach((p) => {
+      p.classList.remove("expanded");
+      p.classList.remove("selected");
+    });
 
     const bodies = document.querySelectorAll(".prayer-body");
     bodies.forEach((body) => body.setAttribute("hidden", ""));
@@ -11,6 +14,32 @@
 
     const toggles = document.querySelectorAll(".prayer-toggle");
     toggles.forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+  }
+
+  function openFirstPrayerInActiveCategory() {
+    // Find currently active section, or fall back to the first section
+    let activeSection = document.querySelector(".category-section.is-active");
+    if (!activeSection) {
+      const allSections = document.querySelectorAll(".category-section");
+      activeSection = allSections[0];
+    }
+    if (!activeSection) return;
+
+    const firstPrayer = activeSection.querySelector(".prayer");
+    if (!firstPrayer) return;
+
+    collapseAllPrayers();
+
+    const preview = firstPrayer.querySelector(".prayer-preview");
+    const body = firstPrayer.querySelector(".prayer-body");
+    const toggle = firstPrayer.querySelector(".prayer-toggle");
+    if (!preview || !body || !toggle) return;
+
+    preview.setAttribute("hidden", "");
+    body.removeAttribute("hidden");
+    toggle.setAttribute("aria-expanded", "true");
+    firstPrayer.classList.add("expanded");
+    firstPrayer.classList.add("selected");
   }
 
   function initCategories() {
@@ -34,11 +63,12 @@
           }
         });
 
-        // Clear selected & expanded prayers when switching categories
-        document.querySelectorAll(".prayer.selected").forEach((p) => {
-          p.classList.remove("selected");
-        });
+        // Ensure a clean state, then open first prayer in the new category
         collapseAllPrayers();
+        openFirstPrayerInActiveCategory();
+
+        // Scroll page back to the top when switching category
+        window.scrollTo({ top: 0 });
       });
     });
   }
@@ -59,28 +89,38 @@
 
         const isCurrentlyOpen = prayerEl.classList.contains("expanded");
 
-        // Always update selected state
+        // If this prayer is already open, keep it open and just ensure it's selected
+        if (isCurrentlyOpen) {
+          document.querySelectorAll(".prayer.selected").forEach((p) => {
+            p.classList.remove("selected");
+          });
+          prayerEl.classList.add("selected");
+          toggle.setAttribute("aria-expanded", "true");
+          return;
+        }
+
+        // Switch to this prayer:
+        // 1) clear selection
         document.querySelectorAll(".prayer.selected").forEach((p) => {
           p.classList.remove("selected");
         });
-        prayerEl.classList.add("selected");
 
-        // Close everything first
+        // 2) close everything
         collapseAllPrayers();
 
-        if (!isCurrentlyOpen) {
-          // Open this one: swap preview ↔ body
-          preview.setAttribute("hidden", "");
-          body.removeAttribute("hidden");
+        // 3) open this one
+        preview.setAttribute("hidden", "");
+        body.removeAttribute("hidden");
+        toggle.setAttribute("aria-expanded", "true");
+        prayerEl.classList.add("expanded");
+        prayerEl.classList.add("selected");
 
-          toggle.setAttribute("aria-expanded", "true");
-          prayerEl.classList.add("expanded");
+        const rect = prayerEl.getBoundingClientRect();
+        const topVisible = rect.top >= 0 && rect.top < window.innerHeight;
 
-          if (window.innerWidth <= 768) {
-            prayerEl.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
+        if (!topVisible) {
+          prayerEl.scrollIntoView({ block: "start" });
         }
-        // If it *was* open, collapseAllPrayers() just closed it.
       });
     });
   }
@@ -88,5 +128,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     initCategories();
     initPrayers();
+    // Ensure at least one prayer is open when the page loads
+    openFirstPrayerInActiveCategory();
   });
 })();

@@ -15,10 +15,10 @@ body {
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.5;
   color: #222;
-  background: #f7f7f7;
+  background: #f1f1f1;
 }
 
 .app {
@@ -79,7 +79,7 @@ body {
 .content {
   flex: 1;
   padding: 1.5rem 1.5rem 3rem;
-  max-width: 900px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -100,7 +100,7 @@ body {
 /* Authors and prayers */
 
 .author-heading {
-  margin: 1.5rem 0 0.5rem;
+  margin: 1.5rem 0 1rem;
   font-size: 1rem;
   font-weight: 600;
   opacity: 0.9;
@@ -112,68 +112,99 @@ body {
 
 /* Prayer item */
 
-/* Base prayer card */
+/* Base prayer card (collapsed) */
 .prayer {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   border-radius: 0.5rem;
-  border: 1px solid #ddd; /* normal border */
-  background: #ffffff;
-  /* transition: border-color 0.15s ease; */
+  border: 1px solid #ddd;
+  background: #fafafa; /* slightly muted so expanded stands out */
+  scroll-margin-top: 1rem;
 }
 
-/* Highlight ONLY when expanded */
+.prayer .prayer-number {
+  color: #999;
+}
+
+.prayer .prayer-preview,
+.prayer .prayer-body {
+  color: #666;
+  opacity: 0.9;
+}
+
+/* Expanded state */
 .prayer.expanded {
-  border-color: #2f59d8; /* stronger blue */
+  border-color: #2f59d8;
+  background: #ffffff;
 }
 
-/* Make the button fill the card with no extra padding of its own */
+.prayer.expanded .prayer-number {
+  color: #2f59d8;
+}
+
+.prayer.expanded .prayer-preview,
+.prayer.expanded .prayer-body {
+  color: #222;
+  opacity: 1;
+}
+
+/* Make the button fill the card */
 .prayer-toggle {
   width: 100%;
   border: none;
   background: none;
   cursor: pointer;
   font: inherit;
-  padding: 0; /* important */
+  padding: 0;
   text-align: left;
 }
 
-/* Shared padding for both preview and body */
+/* Shared padding */
 .prayer-inner {
   padding: 0.6rem 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.prayer-number {
+  min-width: 1.5rem;
+  text-align: right;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.prayer-content {
+  flex: 1;
 }
 
 .prayer-preview {
-  /* font-size: 0.9rem; */
-  color: #555;
+  white-space: pre-line;
 }
 
 .prayer-preview p {
-  margin: 0.4rem 0;
+  margin: 0.6rem 0;
 }
 
-/* Body for longer prayers – note no left/right padding here */
 .prayer-body {
-  /* font-size: 0.92rem; */
   color: #333;
 }
 
 .prayer-body p {
-  margin: 0.4rem 0;
+  margin: 0.6rem 0;
 }
 
-/* Remove this old rule completely:
-.prayer.expanded .prayer-toggle {
-  display: none;
+.prayer-body p + p {
+  text-indent: 1.5em;
 }
-*/
 
-/* Only one of these is visible; JS toggles [hidden] */
+/* Preview/body toggle */
 .prayer-preview[hidden],
 .prayer-body[hidden] {
   display: none;
 }
 
-/* Optional special styling for different content types */
+/* Special content styling */
 
 .content-info {
   font-style: italic;

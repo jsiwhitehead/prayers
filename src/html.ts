@@ -88,7 +88,7 @@ function getPreviewText(contentArray: Content[], maxChars: number) {
 
   if (!preview) return "";
 
-  return truncated ? preview.trim() + "…" : preview;
+  return truncated ? preview.trim() + "…\n…" : preview;
 }
 
 function renderContentParagraph(item: Content) {
@@ -118,11 +118,12 @@ function renderContentParagraph(item: Content) {
 
 function renderPrayerArticle(
   prayer: Prayer,
-  index: number,
-  categorySlug: string
+  prayerIndex: number, // original array index (for IDs)
+  categorySlug: string,
+  displayIndex: number // 1-based number within the author group
 ) {
   const author = prayer.prayer;
-  const prayerId = `${categorySlug}-p${index}`;
+  const prayerId = `${categorySlug}-p${prayerIndex}`;
 
   const previewText = getPreviewText(prayer.content || [], PREVIEW_MAX_CHARS);
   const previewHtml = `<p>${escapeHtml(previewText)}</p>`;
@@ -136,6 +137,7 @@ function renderPrayerArticle(
       data-prayer-id="${escapeHtml(prayerId)}"
       data-category="${escapeHtml(categorySlug)}"
       data-author="${escapeHtml(author)}"
+      data-number="${escapeHtml(String(displayIndex))}"
     >
       <button
         class="prayer-toggle"
@@ -144,12 +146,16 @@ function renderPrayerArticle(
         aria-controls="body-${escapeHtml(prayerId)}"
       >
         <div class="prayer-inner">
-          <div class="prayer-preview">
-            ${previewHtml}
+          <div class="prayer-number" aria-hidden="true">
+            ${escapeHtml(String(displayIndex))}.
           </div>
 
-          <div class="prayer-body" id="body-${escapeHtml(prayerId)}" hidden>
+          <div class="prayer-content">
+            <div class="prayer-preview">${previewHtml}</div>
+
+            <div class="prayer-body" id="body-${escapeHtml(prayerId)}" hidden>
             ${bodyParas}
+            </div>
           </div>
         </div>
       </button>
@@ -176,23 +182,31 @@ function renderCategorySection(categoryName: string, prayers: Prayer[]) {
     ...[...byAuthor.keys()].filter((a) => !authorOrder.includes(a)),
   ];
 
+  // Global counter within this category
+  let counter = 0;
+
   const authorSections = authorsSorted
     .map((author) => {
       const entries = byAuthor.get(author)!;
       const itemsHtml = entries
         .map(({ prayer, index }) =>
-          renderPrayerArticle(prayer, index, categorySlug)
+          renderPrayerArticle(
+            prayer,
+            index, // keep original index for IDs
+            categorySlug,
+            ++counter // global 1-based numbering across authors
+          )
         )
         .join("\n");
 
       return `
-        <section class="author-group" data-author="${escapeHtml(author)}">
-          <h2 class="author-heading">${escapeHtml(author)}</h2>
-          <div class="prayers-list">
-            ${itemsHtml}
-          </div>
-        </section>
-      `;
+      <section class="author-group" data-author="${escapeHtml(author)}">
+        <h2 class="author-heading">${escapeHtml(author)}</h2>
+        <div class="prayers-list">
+          ${itemsHtml}
+        </div>
+      </section>
+    `;
     })
     .join("\n");
 
