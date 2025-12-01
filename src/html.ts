@@ -43,6 +43,15 @@ function slugify(str: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function prayerWordCount(prayer: Prayer) {
+  if (!prayer.content) return 0;
+  return prayer.content
+    .map(getContentText) // reuse your existing helper
+    .join(" ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
 function getContentText(item: Content) {
   if (typeof item === "string") return item;
   if (item && typeof item === "object" && "text" in item) return item.text;
@@ -131,6 +140,8 @@ function renderPrayerArticle(
     .map(renderContentParagraph)
     .join("\n");
 
+  const authorLineHtml = `<p class="prayer-author">— ${escapeHtml(author)}</p>`;
+
   return `
     <article
       class="prayer"
@@ -155,6 +166,7 @@ function renderPrayerArticle(
 
             <div class="prayer-body" id="body-${escapeHtml(prayerId)}" hidden>
             ${bodyParas}
+            ${authorLineHtml}
             </div>
           </div>
         </div>
@@ -166,10 +178,13 @@ function renderPrayerArticle(
 function renderCategorySection(categoryName: string, prayers: Prayer[]) {
   const categorySlug = slugify(categoryName);
 
+  // Skip prayers longer than 800 words
+  const filteredPrayers = prayers.filter((p) => prayerWordCount(p) <= 800);
+
   // Group prayers by author
   const byAuthor = new Map<string, { prayer: Prayer; index: number }[]>();
-  for (let i = 0; i < prayers.length; i++) {
-    const p = prayers[i]!;
+  for (let i = 0; i < filteredPrayers.length; i++) {
+    const p = filteredPrayers[i]!;
     const author = p.prayer || "Unknown";
     if (!byAuthor.has(author)) byAuthor.set(author, []);
     byAuthor.get(author)!.push({ prayer: p, index: i });
@@ -227,8 +242,6 @@ async function build() {
     return;
   }
 
-  const firstCategorySlug = slugify(categoryNames[0]!);
-
   const sidebarLinksHtml = categoryNames
     .map((name, idx) => {
       const slug = slugify(name);
@@ -268,6 +281,7 @@ async function build() {
     <meta charset="utf-8" />
     <title>Prayers</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>

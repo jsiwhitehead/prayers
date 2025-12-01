@@ -166,8 +166,12 @@ for (const prayer of prayers["Aid"]!) {
   }
 }
 
+const teachingHumanity = teachingCategorised["Humanity"];
+delete teachingCategorised["Humanity"];
+
 const result = {
   Praise: prayers["Praise"],
+  Humanity: teachingHumanity,
   ...nearnessCategorised,
   ...teachingCategorised,
   ...aidCategorised,
