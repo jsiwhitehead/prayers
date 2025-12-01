@@ -51,27 +51,42 @@ body {
 .category-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
+/* Row: full-width clickable area, no visual styling */
 .category-link {
   display: block;
   width: 100%;
-  padding: 0.4rem 0.6rem;
   border: none;
-  border-radius: 0.4rem;
+  padding: 0;
   background: none;
   text-align: left;
   cursor: pointer;
   font: inherit;
-  color: #444;
+  color: inherit;
 }
 
-.category-link:hover {
+/* Pill: visual element with spacing, inside the button */
+.category-link-inner {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  color: #444;
+
+  /* visual gap between pills, but still inside clickable area */
+  margin: 0.125rem 0;
+}
+
+.category-link:last-child .category-link-inner {
+  margin-bottom: 0;
+}
+
+/* Hover and active styles apply to the pill, not the entire row */
+.category-link:hover .category-link-inner {
   background: #f0f0f0;
 }
 
-.category-link.is-active {
+.category-link.is-active .category-link-inner {
   background: #e2ecff;
   color: #1a3a7a;
 }
@@ -207,20 +222,9 @@ body {
 }
 
 /* Preview/body toggle */
-.prayer-preview[hidden],
+.prayer-toggle[hidden],
 .prayer-body[hidden] {
   display: none;
-}
-
-/* Special content styling */
-
-.content-info {
-  font-style: italic;
-  opacity: 0.9;
-}
-
-.content-call {
-  font-weight: 600;
 }
 
 /* Responsive tweaks */

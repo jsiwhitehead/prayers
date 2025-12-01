@@ -1,4 +1,16 @@
+// main.js
 (function () {
+  function clearTextSelection() {
+    const sel = window.getSelection
+      ? window.getSelection()
+      : document.selection;
+
+    if (sel) {
+      if (sel.removeAllRanges) sel.removeAllRanges();
+      else if (sel.empty) sel.empty();
+    }
+  }
+
   function collapseAllPrayers() {
     const prayers = document.querySelectorAll(".prayer");
     prayers.forEach((p) => {
@@ -9,11 +21,11 @@
     const bodies = document.querySelectorAll(".prayer-body");
     bodies.forEach((body) => body.setAttribute("hidden", ""));
 
-    const previews = document.querySelectorAll(".prayer-preview");
-    previews.forEach((preview) => preview.removeAttribute("hidden"));
-
     const toggles = document.querySelectorAll(".prayer-toggle");
-    toggles.forEach((btn) => btn.setAttribute("aria-expanded", "false"));
+    toggles.forEach((btn) => {
+      btn.removeAttribute("hidden");
+      btn.setAttribute("aria-expanded", "false");
+    });
   }
 
   function openFirstPrayerInActiveCategory() {
@@ -30,14 +42,13 @@
 
     collapseAllPrayers();
 
-    const preview = firstPrayer.querySelector(".prayer-preview");
     const body = firstPrayer.querySelector(".prayer-body");
     const toggle = firstPrayer.querySelector(".prayer-toggle");
-    if (!preview || !body || !toggle) return;
+    if (!body || !toggle) return;
 
-    preview.setAttribute("hidden", "");
-    body.removeAttribute("hidden");
+    toggle.setAttribute("hidden", "");
     toggle.setAttribute("aria-expanded", "true");
+    body.removeAttribute("hidden");
     firstPrayer.classList.add("expanded");
     firstPrayer.classList.add("selected");
   }
@@ -83,35 +94,19 @@
         const prayerEl = toggle.closest(".prayer");
         if (!prayerEl) return;
 
-        const preview = prayerEl.querySelector(".prayer-preview");
         const body = prayerEl.querySelector(".prayer-body");
-        if (!preview || !body) return;
+        if (!body) return;
 
-        const isCurrentlyOpen = prayerEl.classList.contains("expanded");
-
-        // If this prayer is already open, keep it open and just ensure it's selected
-        if (isCurrentlyOpen) {
-          document.querySelectorAll(".prayer.selected").forEach((p) => {
-            p.classList.remove("selected");
-          });
-          prayerEl.classList.add("selected");
-          toggle.setAttribute("aria-expanded", "true");
-          return;
-        }
-
-        // Switch to this prayer:
-        // 1) clear selection
-        document.querySelectorAll(".prayer.selected").forEach((p) => {
-          p.classList.remove("selected");
-        });
-
-        // 2) close everything
+        // 1) Close everything
         collapseAllPrayers();
 
-        // 3) open this one
-        preview.setAttribute("hidden", "");
-        body.removeAttribute("hidden");
+        // 2) Clear any text selection that was left behind
+        clearTextSelection();
+
+        // 3) Open this one
+        toggle.setAttribute("hidden", "");
         toggle.setAttribute("aria-expanded", "true");
+        body.removeAttribute("hidden");
         prayerEl.classList.add("expanded");
         prayerEl.classList.add("selected");
 

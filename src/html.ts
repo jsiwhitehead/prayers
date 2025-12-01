@@ -133,6 +133,7 @@ function renderPrayerArticle(
 ) {
   const author = prayer.prayer;
   const prayerId = `${categorySlug}-p${prayerIndex}`;
+  const bodyId = `body-${prayerId}`;
 
   const previewText = getPreviewText(prayer.content || [], PREVIEW_MAX_CHARS);
   const previewHtml = `<p>${escapeHtml(previewText)}</p>`;
@@ -141,6 +142,7 @@ function renderPrayerArticle(
     .join("\n");
 
   const authorLineHtml = `<p class="prayer-author">— ${escapeHtml(author)}</p>`;
+  const numberHtml = escapeHtml(String(displayIndex)) + ".";
 
   return `
     <article
@@ -150,27 +152,37 @@ function renderPrayerArticle(
       data-author="${escapeHtml(author)}"
       data-number="${escapeHtml(String(displayIndex))}"
     >
+      <!-- Collapsed view -->
       <button
         class="prayer-toggle"
         type="button"
         aria-expanded="false"
-        aria-controls="body-${escapeHtml(prayerId)}"
+        aria-controls="${escapeHtml(bodyId)}"
       >
         <div class="prayer-inner">
           <div class="prayer-number" aria-hidden="true">
-            ${escapeHtml(String(displayIndex))}.
+            ${numberHtml}
           </div>
 
           <div class="prayer-content">
             <div class="prayer-preview">${previewHtml}</div>
-
-            <div class="prayer-body" id="body-${escapeHtml(prayerId)}" hidden>
-            ${bodyParas}
-            ${authorLineHtml}
-            </div>
           </div>
         </div>
       </button>
+
+      <!-- Expanded view -->
+      <div class="prayer-body" id="${escapeHtml(bodyId)}" hidden>
+        <div class="prayer-inner prayer-body-inner">
+          <div class="prayer-number" aria-hidden="true">
+            ${numberHtml}
+          </div>
+
+          <div class="prayer-content">
+            ${bodyParas}
+            ${authorLineHtml}
+          </div>
+        </div>
+      </div>
     </article>
   `;
 }
@@ -252,7 +264,9 @@ async function build() {
           type="button"
           data-category="${escapeHtml(slug)}"
         >
-          ${escapeHtml(name)}
+          <span class="category-link-inner">
+            ${escapeHtml(name)}
+          </span>
         </button>
       `;
     })
