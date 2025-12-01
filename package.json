@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "json": "bun ./src/json.ts",
+    "sub": "bun ./src/sub-json.ts",
     "html": "bun ./src/html.ts"
   },
   "devDependencies": {

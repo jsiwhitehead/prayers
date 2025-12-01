@@ -2,14 +2,7 @@
 
 // ---- Types matching your data ----
 
-const CATEGORY_ORDER = [
-  "Praise and Devotion",
-  "Bestowal and Nearness",
-  "Teaching and Service",
-  "Protection and Forgiveness",
-];
-
-const AUTHOR_ORDER = ["Bahá’u’lláh", "The Báb", "‘Abdu’l‑Bahá"];
+const AUTHOR_ORDER = ["Bahá’u’lláh", "The Báb", "‘Abdu’l-Bahá"];
 
 type TypeContent = {
   type: "info" | "call";
@@ -24,15 +17,19 @@ type LinesContent = {
 type Content = string | TypeContent | LinesContent;
 
 type Prayer = {
-  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l‑Bahá";
+  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l-Bahá";
   content: Content[];
 };
 
+// Inner layer: category → list of prayers
 type PrayersByCategory = Record<string, Prayer[]>;
+
+// Outer layer: outer category → inner categories
+type NestedPrayersByCategory = Record<string, PrayersByCategory>;
 
 // ---- Paths ----
 
-const PRAYERS_JSON_PATH = "./src/prayers-themed.json";
+const PRAYERS_JSON_PATH = "./src/prayers-subthemed.json";
 const OUTPUT_HTML_PATH = "./src/index.html";
 
 // ---- Helpers ----
@@ -74,11 +71,15 @@ function renderPrayer(prayer: Prayer): string {
   `;
 }
 
-function renderCategory(name: string, prayers: Prayer[]): string {
+function renderInnerCategory(name: string, prayers: Prayer[]): string {
   const sortedPrayers = [...prayers].sort((a, b) => {
     const indexA = AUTHOR_ORDER.indexOf(a.prayer);
     const indexB = AUTHOR_ORDER.indexOf(b.prayer);
-    return indexA - indexB;
+
+    const safeIndexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+    const safeIndexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+
+    return safeIndexA - safeIndexB;
   });
 
   const prayersHtml = sortedPrayers.map(renderPrayer).join("\n");
@@ -91,11 +92,28 @@ function renderCategory(name: string, prayers: Prayer[]): string {
   `;
 }
 
-function renderPage(prayersByCategory: PrayersByCategory): string {
-  const categoriesHtml = CATEGORY_ORDER.map((categoryName) => {
-    const prayers = prayersByCategory[categoryName] ?? [];
-    return renderCategory(categoryName, prayers);
-  }).join("\n");
+function renderOuterCategory(
+  outerName: string,
+  innerCategories: PrayersByCategory
+): string {
+  const innerHtml = Object.entries(innerCategories)
+    .map(([innerName, prayers]) => renderInnerCategory(innerName, prayers))
+    .join("\n");
+
+  return `
+    <section class="category-group">
+      <h2 class="category-group-title">${escapeHtml(outerName)}</h2>
+      ${innerHtml}
+    </section>
+  `;
+}
+
+function renderPage(prayersByOuterCategory: NestedPrayersByCategory): string {
+  const categoriesHtml = Object.entries(prayersByOuterCategory)
+    .map(([outerName, innerCategories]) =>
+      renderOuterCategory(outerName, innerCategories)
+    )
+    .join("\n");
 
   return `<!doctype html>
 <html lang="en">
@@ -123,7 +141,7 @@ function renderPage(prayersByCategory: PrayersByCategory): string {
 async function main() {
   const file = Bun.file(PRAYERS_JSON_PATH);
   const jsonText = await file.text();
-  const data = JSON.parse(jsonText) as PrayersByCategory;
+  const data = JSON.parse(jsonText) as NestedPrayersByCategory;
 
   const html = renderPage(data);
   await Bun.write(OUTPUT_HTML_PATH, html);

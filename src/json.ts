@@ -37,6 +37,7 @@ const categoryTests: Record<string, (string | RegExp)[]> = {
     "purest branch",
     "this tree",
     "down the bayan",
+    "of the bayan",
     "great prison",
     "revealing thy cause",
     "i am cast",
@@ -44,6 +45,8 @@ const categoryTests: Record<string, (string | RegExp)[]> = {
     "me and this servant",
     "in a mountain",
     "the exile",
+    "him who is thy light",
+    "love me",
     "one slave",
     /this (association|congregation|prison|mountain|city)/,
   ],
@@ -168,10 +171,11 @@ for (const prayer of prayers) {
 }
 
 const themeTests: Record<string, (string | RegExp)[]> = {
-  "Oppression and Persecution": [
+  Opposition: [
     "enemies",
     "adversaries",
     "the wicked",
+    "people of envy",
     "infidel",
     "infidels",
     "have repudiated",
@@ -189,7 +193,7 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "swords",
     "onslaught of the people",
   ],
-  "Protection and Forgiveness": [
+  Aid: [
     "adversities",
     "adversity",
     "tribulations",
@@ -199,8 +203,9 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "sword",
     "when sorrows",
     "seized with alarm",
+    "shameful and palpable error",
   ],
-  "Teaching and Service": [
+  Teaching: [
     "exalt thy",
     "speak forth",
     "to spread",
@@ -249,7 +254,7 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "guide thy servants",
     "repent before the door",
   ],
-  "Protection and Forgiveness 2": [
+  "Aid 2": [
     "trespasses",
     "wash away",
     "sinner",
@@ -275,7 +280,7 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "corrupt",
     "passion",
   ],
-  "Bestowal and Nearness": [
+  Nearness: [
     /bestow (upon|on|thy)/,
     "bestowed",
     "give",
@@ -288,7 +293,7 @@ const themeTests: Record<string, (string | RegExp)[]> = {
     "destine",
     "vivified",
   ],
-  "Praise and Devotion": [
+  Praise: [
     "comprehend",
     "powerlessness",
     "perplexed",
@@ -338,11 +343,11 @@ for (const prayer of uncategorised) {
   }
 
   if (!assignedLevel) {
-    themeCategorised["Bestowal and Nearness"]!.push(prayer);
+    themeCategorised["Nearness"]!.push(prayer);
   }
 }
 
-for (const cat of ["Teaching and Service", "Bestowal and Nearness"]) {
+for (const cat of ["Teaching", "Nearness"]) {
   for (const p of themeCategorised[cat]!) {
     p.content = p.content.filter((a) => {
       if (typeof a !== "string" && "type" in a && a.type === "info") {
@@ -353,10 +358,8 @@ for (const cat of ["Teaching and Service", "Bestowal and Nearness"]) {
   }
 }
 
-themeCategorised["Protection and Forgiveness"]?.push(
-  ...themeCategorised["Protection and Forgiveness 2"]!
-);
-delete themeCategorised["Protection and Forgiveness 2"];
+themeCategorised["Aid"]?.push(...themeCategorised["Aid 2"]!);
+delete themeCategorised["Aid 2"];
 
 const getContentText = (c: Content): string => {
   if (typeof c === "string") return c;
@@ -366,9 +369,9 @@ const getContentText = (c: Content): string => {
 const getPrayerTextLength = (p: Prayer): number =>
   p.content.reduce((sum, item) => sum + getContentText(item).length, 0);
 
-themeCategorised["Protection and Forgiveness"] = [
-  ...themeCategorised["Protection and Forgiveness"]!,
-].sort((a, b) => getPrayerTextLength(a) - getPrayerTextLength(b));
+themeCategorised["Aid"] = [...themeCategorised["Aid"]!].sort(
+  (a, b) => getPrayerTextLength(a) - getPrayerTextLength(b)
+);
 
 writeFileSync(
   new URL("./prayers-categorised.json", import.meta.url),
