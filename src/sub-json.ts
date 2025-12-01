@@ -21,7 +21,7 @@ type Prayer = {
 const prayers = rawPrayers as Record<string, Prayer[]>;
 
 const nearnessTests: Record<string, (string | RegExp)[]> = {
-  Collective: [
+  "Nearness: Collective": [
     "unite",
     "we",
     "us",
@@ -31,7 +31,7 @@ const nearnessTests: Record<string, (string | RegExp)[]> = {
     /thy loved ones (in|with|therein)/,
     /these (men|trees|souls|are)/,
   ],
-  Individual: [""],
+  "Nearness: Individual": [""],
 };
 
 const nearnessEntries = Object.entries(nearnessTests);
@@ -82,7 +82,7 @@ const teachingTests: Record<string, (string | RegExp)[]> = {
     "waters of thy unity",
     "lay bare thy mysteries",
   ],
-  Collective: [
+  "Teaching: Collective": [
     "us",
     /help (them|thou)/,
     /these (are|souls|servants)/,
@@ -93,7 +93,7 @@ const teachingTests: Record<string, (string | RegExp)[]> = {
     "accept from",
     "acceptable unto thee",
   ],
-  Individual: [""],
+  "Teaching: Individual": [""],
 };
 
 const teachingEntries = Object.entries(teachingTests);
@@ -125,7 +125,7 @@ for (const prayer of prayers["Teaching"]!) {
 }
 
 const aidTests: Record<string, (string | RegExp)[]> = {
-  Collective: [
+  "Aid: Collective": [
     "us",
     "we set",
     /(on|upon) these/,
@@ -135,7 +135,7 @@ const aidTests: Record<string, (string | RegExp)[]> = {
     "all abide",
     "source of bounty",
   ],
-  Individual: [""],
+  "Aid: Individual": [""],
 };
 
 const aidEntries = Object.entries(aidTests);
@@ -166,17 +166,11 @@ for (const prayer of prayers["Aid"]!) {
   }
 }
 
-const praiseCategorised = {
-  God: prayers["Praise"],
-  Humanity: teachingCategorised["Humanity"],
-};
-delete teachingCategorised["Humanity"];
-
 const result = {
-  Praise: praiseCategorised,
-  Nearness: nearnessCategorised,
-  Teaching: teachingCategorised,
-  Aid: aidCategorised,
+  Praise: prayers["Praise"],
+  ...nearnessCategorised,
+  ...teachingCategorised,
+  ...aidCategorised,
 };
 
 writeFileSync(

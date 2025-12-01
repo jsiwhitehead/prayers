@@ -1,8 +1,7 @@
-// generate.ts
-
-// ---- Types matching your data ----
-
-const AUTHOR_ORDER = ["Bahá’u’lláh", "The Báb", "‘Abdu’l-Bahá"];
+// build.js
+import fs from "node:fs/promises";
+import path from "node:path";
+import prayersJson from "./prayers-subthemed.json" assert { type: "json" };
 
 type TypeContent = {
   type: "info" | "call";
@@ -17,139 +16,272 @@ type LinesContent = {
 type Content = string | TypeContent | LinesContent;
 
 type Prayer = {
-  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l-Bahá";
+  prayer: "Bahá’u’lláh" | "The Báb" | "‘Abdu’l‑Bahá";
   content: Content[];
 };
 
-// Inner layer: category → list of prayers
-type PrayersByCategory = Record<string, Prayer[]>;
+const prayersByCategory = prayersJson as Record<string, Prayer[]>;
 
-// Outer layer: outer category → inner categories
-type NestedPrayersByCategory = Record<string, PrayersByCategory>;
+const OUTPUT_FILE = path.join(process.cwd(), "./site/index.html");
+const PREVIEW_MAX_CHARS = 200;
 
-// ---- Paths ----
-
-const PRAYERS_JSON_PATH = "./src/prayers-subthemed.json";
-const OUTPUT_HTML_PATH = "./src/index.html";
-
-// ---- Helpers ----
-
-function escapeHtml(str: string): string {
-  return str
+function escapeHtml(str: string) {
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-function contentToText(item: Content): string {
+function slugify(str: string) {
+  return String(str)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "") // remove diacritics
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getContentText(item: Content) {
   if (typeof item === "string") return item;
   if (item && typeof item === "object" && "text" in item) return item.text;
   return "";
 }
 
-// ---- Render functions ----
+function getPreviewText(contentArray: Content[], maxChars: number) {
+  if (!contentArray.length) return "";
 
-function renderPrayer(prayer: Prayer): string {
-  const contentHtml = prayer.content
-    .map((item) => {
-      const text = contentToText(item).trim();
-      if (!text) return "";
-      return `<p>${escapeHtml(text)}</p>`;
-    })
-    .filter(Boolean)
+  let preview = "";
+  let truncated = false;
+
+  for (const item of contentArray) {
+    const text = getContentText(item).trim();
+    if (!text) continue;
+
+    const separator = preview ? " " : "";
+    const candidate = preview + separator + text;
+
+    if (candidate.length <= maxChars) {
+      preview = candidate;
+      continue;
+    }
+
+    // Need to truncate — do it by words, not characters
+    const remaining = maxChars - preview.length - separator.length;
+    if (remaining > 0) {
+      const words = text.split(/\s+/);
+      let built = "";
+      for (const w of words) {
+        const tentative = (built ? built + " " : "") + w;
+        if (tentative.length > remaining) break;
+        built = tentative;
+      }
+      if (built) {
+        preview = preview + separator + built;
+      }
+    }
+
+    truncated = true;
+    break;
+  }
+
+  if (!preview) return "";
+
+  return truncated ? preview.trim() + "…" : preview;
+}
+
+function renderContentParagraph(item: Content) {
+  if (typeof item === "string") {
+    return `<p>${escapeHtml(item)}</p>`;
+  }
+
+  if (!item || typeof item !== "object") {
+    return "";
+  }
+
+  const text = "text" in item ? item.text : "";
+  const safeText = escapeHtml(text);
+
+  if ("type" in item && item.type) {
+    const type = escapeHtml(item.type);
+    return `<p class="content-${type}">${safeText}</p>`;
+  }
+
+  if ("lines" in item && Array.isArray(item.lines)) {
+    const linesAttr = escapeHtml(item.lines.join(","));
+    return `<p class="content-lines" data-lines="${linesAttr}">${safeText}</p>`;
+  }
+
+  return `<p>${safeText}</p>`;
+}
+
+function renderPrayerArticle(
+  prayer: Prayer,
+  index: number,
+  categorySlug: string
+) {
+  const author = prayer.prayer;
+  const prayerId = `${categorySlug}-p${index}`;
+
+  const previewText = getPreviewText(prayer.content || [], PREVIEW_MAX_CHARS);
+  const previewHtml = `<p>${escapeHtml(previewText)}</p>`;
+  const bodyParas = (prayer.content || [])
+    .map(renderContentParagraph)
     .join("\n");
 
   return `
-    <article class="prayer">
-      <div class="prayer-content">
-        ${contentHtml}
+    <article
+      class="prayer"
+      data-prayer-id="${escapeHtml(prayerId)}"
+      data-category="${escapeHtml(categorySlug)}"
+      data-author="${escapeHtml(author)}"
+    >
+      <button
+        class="prayer-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="body-${escapeHtml(prayerId)}"
+      >
+        <div class="prayer-inner">
+          <div class="prayer-preview">
+            ${previewHtml}
+          </div>
 
-        <p class="prayer-author">—${escapeHtml(prayer.prayer)}</p>
-      </div>
+          <div class="prayer-body" id="body-${escapeHtml(prayerId)}" hidden>
+            ${bodyParas}
+          </div>
+        </div>
+      </button>
     </article>
   `;
 }
 
-function renderInnerCategory(name: string, prayers: Prayer[]): string {
-  const sortedPrayers = [...prayers].sort((a, b) => {
-    const indexA = AUTHOR_ORDER.indexOf(a.prayer);
-    const indexB = AUTHOR_ORDER.indexOf(b.prayer);
+function renderCategorySection(categoryName: string, prayers: Prayer[]) {
+  const categorySlug = slugify(categoryName);
 
-    const safeIndexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
-    const safeIndexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+  // Group prayers by author
+  const byAuthor = new Map<string, { prayer: Prayer; index: number }[]>();
+  for (let i = 0; i < prayers.length; i++) {
+    const p = prayers[i]!;
+    const author = p.prayer || "Unknown";
+    if (!byAuthor.has(author)) byAuthor.set(author, []);
+    byAuthor.get(author)!.push({ prayer: p, index: i });
+  }
 
-    return safeIndexA - safeIndexB;
-  });
+  // Render author sections in a fixed order if you want
+  const authorOrder = ["Bahá’u’lláh", "The Báb", "‘Abdu’l-Bahá"];
+  const authorsSorted = [
+    ...authorOrder.filter((a) => byAuthor.has(a)),
+    ...[...byAuthor.keys()].filter((a) => !authorOrder.includes(a)),
+  ];
 
-  const prayersHtml = sortedPrayers.map(renderPrayer).join("\n");
+  const authorSections = authorsSorted
+    .map((author) => {
+      const entries = byAuthor.get(author)!;
+      const itemsHtml = entries
+        .map(({ prayer, index }) =>
+          renderPrayerArticle(prayer, index, categorySlug)
+        )
+        .join("\n");
 
-  return `
-    <details class="category">
-      <summary class="category-title">${escapeHtml(name)}</summary>
-      ${prayersHtml}
-    </details>
-  `;
-}
-
-function renderOuterCategory(
-  outerName: string,
-  innerCategories: PrayersByCategory
-): string {
-  const innerHtml = Object.entries(innerCategories)
-    .map(([innerName, prayers]) => renderInnerCategory(innerName, prayers))
+      return `
+        <section class="author-group" data-author="${escapeHtml(author)}">
+          <h2 class="author-heading">${escapeHtml(author)}</h2>
+          <div class="prayers-list">
+            ${itemsHtml}
+          </div>
+        </section>
+      `;
+    })
     .join("\n");
 
   return `
-    <section class="category-group">
-      <h2 class="category-group-title">${escapeHtml(outerName)}</h2>
-      ${innerHtml}
+    <section class="category-section" data-category="${escapeHtml(
+      categorySlug
+    )}">
+      <h1 class="category-title">${escapeHtml(categoryName)}</h1>
+      ${authorSections}
     </section>
   `;
 }
 
-function renderPage(prayersByOuterCategory: NestedPrayersByCategory): string {
-  const categoriesHtml = Object.entries(prayersByOuterCategory)
-    .map(([outerName, innerCategories]) =>
-      renderOuterCategory(outerName, innerCategories)
-    )
+async function build() {
+  const categoryNames = Object.keys(prayersByCategory);
+  if (!categoryNames.length) {
+    console.error("No categories found in prayers-subthemed.json");
+    return;
+  }
+
+  const firstCategorySlug = slugify(categoryNames[0]!);
+
+  const sidebarLinksHtml = categoryNames
+    .map((name, idx) => {
+      const slug = slugify(name);
+      const activeClass = idx === 0 ? " is-active" : "";
+      return `
+        <button
+          class="category-link${activeClass}"
+          type="button"
+          data-category="${escapeHtml(slug)}"
+        >
+          ${escapeHtml(name)}
+        </button>
+      `;
+    })
     .join("\n");
 
-  return `<!doctype html>
+  const categorySectionsHtml = categoryNames
+    .map((name, idx) => {
+      const sectionHtml = renderCategorySection(
+        name,
+        prayersByCategory[name] || []
+      );
+      // add is-active class to the first category section
+      if (idx === 0) {
+        return sectionHtml.replace(
+          'class="category-section"',
+          'class="category-section is-active"'
+        );
+      }
+      return sectionHtml;
+    })
+    .join("\n");
+
+  const html = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Prayers – Adversity</title>
+    <title>Prayers</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="./styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="page">
-      <header class="page-header">
-        <h1 class="page-title">Bahá’í Prayers</h1>
-      </header>
-      <div id="app">
-        ${categoriesHtml}
-      </div>
-    </main>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <h1 class="app-title">Prayers</h1>
+          <nav class="category-nav">
+            ${sidebarLinksHtml}
+          </nav>
+        </div>
+      </aside>
+
+      <main class="content">
+        ${categorySectionsHtml}
+      </main>
+    </div>
+
+    <script src="main.js" defer></script>
   </body>
-</html>`;
+</html>
+`;
+
+  await fs.writeFile(OUTPUT_FILE, html, "utf8");
+  console.log(`Wrote ${OUTPUT_FILE}`);
 }
 
-// ---- Main ----
-
-async function main() {
-  const file = Bun.file(PRAYERS_JSON_PATH);
-  const jsonText = await file.text();
-  const data = JSON.parse(jsonText) as NestedPrayersByCategory;
-
-  const html = renderPage(data);
-  await Bun.write(OUTPUT_HTML_PATH, html);
-
-  console.log(`Wrote ${OUTPUT_HTML_PATH}`);
-}
-
-main().catch((err) => {
-  console.error("Error generating HTML:", err);
+build().catch((err) => {
+  console.error(err);
   process.exit(1);
 });

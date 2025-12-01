@@ -1,81 +1,125 @@
-/* ---- Base ---- */
+/* Reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.6;
+  font-family: system-ui, sans-serif;
   background: #fafafa;
   color: #222;
+  line-height: 1.6;
   font-size: 17px;
 }
 
-main.page {
-  max-width: 750px;
+/* Layout */
+
+.page {
+  max-width: 720px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem 1.25rem 2rem;
 }
 
-/* ---- Header ---- */
-
-.page-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
+/* Header */
 
 .page-title {
   margin: 0;
-  font-size: 1.9rem;
+  font-size: 1.7rem;
   font-weight: 600;
 }
 
-/* ---- Category sections ---- */
+/* Sticky navigation */
 
-details.category {
-  margin-bottom: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 0.5rem 0.8rem;
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%; /* full browser width */
+  max-width: none; /* no limiting container width */
+  padding: 0.75rem 1rem;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.top-nav-link {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
   background: #fff;
+  border: 1px solid #ccc;
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: #333;
 }
 
-summary.category-title {
-  cursor: pointer;
-  font-size: 1.2rem;
+.top-nav-link:hover {
+  border-color: #999;
+}
+
+/* Category layout */
+
+.outer-category {
+  margin-top: 2rem;
+}
+
+.outer-title {
+  font-size: 1.25rem;
   font-weight: 600;
-  padding: 0.3rem 0;
+  margin-bottom: 1rem;
 }
 
-summary.category-title:hover {
-  color: #444;
+.inner-category {
+  margin-bottom: 1.6rem;
+  scroll-margin-top: 4.5rem;
 }
 
-/* Ensure summary text doesn't shift */
-details.category summary::-webkit-details-marker {
-  color: #666;
+.inner-title {
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
 }
 
-/* ---- Prayers ---- */
+/* Prayer blocks */
 
 .prayer {
-  margin: 1.5rem 0;
-  padding-top: 1.5rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  border-top: 1px solid #ddd;
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  padding: 0.9rem 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
-.prayer-content p {
-  margin: 0.5rem 0;
+.prayer p {
+  margin: 0.7rem 0;
 }
 
-.prayer-content p + p {
-  text-indent: 1.5em;
-  margin-top: 0.7rem;
+.prayer p + p {
+  text-indent: 1.5em; /* adjust to taste */
 }
 
 .prayer-author {
-  margin-top: 1rem;
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
   text-align: right;
-  font-style: italic;
   color: #555;
+  font-style: italic;
+}
+
+/* Mobile adjustments */
+
+@media (max-width: 480px) {
+  .page {
+    padding-inline: 0.75rem;
+  }
+
+  .top-nav-link {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.6rem;
+  }
 }
