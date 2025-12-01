@@ -21,7 +21,7 @@ type Prayer = {
 const prayers = rawPrayers as Record<string, Prayer[]>;
 
 const nearnessTests: Record<string, (string | RegExp)[]> = {
-  "Nearness: Collective": [
+  Adorning: [
     "unite",
     "we",
     "us",
@@ -31,7 +31,7 @@ const nearnessTests: Record<string, (string | RegExp)[]> = {
     /thy loved ones (in|with|therein)/,
     /these (men|trees|souls|are)/,
   ],
-  "Nearness: Individual": [""],
+  Nearness: [""],
 };
 
 const nearnessEntries = Object.entries(nearnessTests);
@@ -63,7 +63,7 @@ for (const prayer of prayers["Nearness"]!) {
 }
 
 const teachingTests: Record<string, (string | RegExp)[]> = {
-  Humanity: [
+  Awakening: [
     "unite",
     "open the eyes",
     "faces of thy servants",
@@ -82,7 +82,7 @@ const teachingTests: Record<string, (string | RegExp)[]> = {
     "waters of thy unity",
     "lay bare thy mysteries",
   ],
-  "Teaching: Collective": [
+  Strength: [
     "us",
     /help (them|thou)/,
     /these (are|souls|servants)/,
@@ -93,7 +93,7 @@ const teachingTests: Record<string, (string | RegExp)[]> = {
     "accept from",
     "acceptable unto thee",
   ],
-  "Teaching: Individual": [""],
+  Teaching: [""],
 };
 
 const teachingEntries = Object.entries(teachingTests);
@@ -125,7 +125,7 @@ for (const prayer of prayers["Teaching"]!) {
 }
 
 const aidTests: Record<string, (string | RegExp)[]> = {
-  "Aid: Collective": [
+  Reliance: [
     "us",
     "we set",
     /(on|upon) these/,
@@ -135,7 +135,7 @@ const aidTests: Record<string, (string | RegExp)[]> = {
     "all abide",
     "source of bounty",
   ],
-  "Aid: Individual": [""],
+  Grace: [""],
 };
 
 const aidEntries = Object.entries(aidTests);
@@ -166,12 +166,12 @@ for (const prayer of prayers["Aid"]!) {
   }
 }
 
-const teachingHumanity = teachingCategorised["Humanity"];
-delete teachingCategorised["Humanity"];
+const teachingAwakening = teachingCategorised["Awakening"];
+delete teachingCategorised["Awakening"];
 
 const result = {
-  Praise: prayers["Praise"],
-  Humanity: teachingHumanity,
+  Majesty: prayers["Praise"],
+  Awakening: teachingAwakening,
   ...nearnessCategorised,
   ...teachingCategorised,
   ...aidCategorised,

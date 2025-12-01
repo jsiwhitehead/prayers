@@ -1,5 +1,5 @@
 {
-  "Praise": [
+  "Majesty": [
     {
       "prayer": "The Báb",
       "content": [
@@ -213,7 +213,7 @@
       ]
     }
   ],
-  "Humanity": [
+  "Awakening": [
     {
       "prayer": "The Báb",
       "content": [
@@ -434,7 +434,7 @@
       ]
     }
   ],
-  "Nearness: Collective": [
+  "Adorning": [
     {
       "prayer": "Bahá’u’lláh",
       "content": [
@@ -718,7 +718,7 @@
       ]
     }
   ],
-  "Nearness: Individual": [
+  "Nearness": [
     {
       "prayer": "‘Abdu’l‑Bahá",
       "content": [
@@ -1027,7 +1027,7 @@
       ]
     }
   ],
-  "Teaching: Collective": [
+  "Strength": [
     {
       "prayer": "‘Abdu’l‑Bahá",
       "content": [
@@ -1273,7 +1273,7 @@
       ]
     }
   ],
-  "Teaching: Individual": [
+  "Teaching": [
     {
       "prayer": "Bahá’u’lláh",
       "content": [
@@ -1475,7 +1475,7 @@
       ]
     }
   ],
-  "Aid: Collective": [
+  "Reliance": [
     {
       "prayer": "The Báb",
       "content": [
@@ -1761,7 +1761,7 @@
       ]
     }
   ],
-  "Aid: Individual": [
+  "Grace": [
     {
       "prayer": "‘Abdu’l‑Bahá",
       "content": [
