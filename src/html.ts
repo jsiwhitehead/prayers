@@ -25,6 +25,25 @@ const prayersByCategory = prayersJson as Record<string, Prayer[]>;
 const OUTPUT_FILE = path.join(process.cwd(), "./site/index.html");
 const PREVIEW_MAX_CHARS = 200;
 
+// NEW: category subheadings
+const CATEGORY_SUBHEADINGS: Record<string, string> = {
+  Glory:
+    "Prayers exalting God’s majesty and our humble praise before the Unknowable.",
+  Awakening:
+    "Prayers calling hearts to awaken, be illumined, and turn toward the Divine.",
+  Bestowal:
+    "Prayers seeking God’s bounties to transform, uplift, and unify souls.",
+  Nearness: "Prayers expressing the soul’s longing to draw ever nearer to God.",
+  Strength:
+    "Prayers appealing for divine power to fortify, ennoble, and sustain.",
+  Teaching:
+    "Prayers asking God to kindle the heart and empower service in His Cause.",
+  Reliance:
+    "Prayers affirming trust in God’s mercy, guidance, and protective care.",
+  Shelter:
+    "Prayers turning to God as refuge, seeking His healing and encompassing grace.",
+};
+
 function escapeHtml(str: string) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -189,6 +208,7 @@ function renderPrayerArticle(
 
 function renderCategorySection(categoryName: string, prayers: Prayer[]) {
   const categorySlug = slugify(categoryName);
+  const subheading = CATEGORY_SUBHEADINGS[categoryName] || "";
 
   // Skip prayers longer than 800 words
   const filteredPrayers = prayers.filter((p) => prayerWordCount(p) <= 800);
@@ -242,6 +262,11 @@ function renderCategorySection(categoryName: string, prayers: Prayer[]) {
       categorySlug
     )}">
       <h1 class="category-title">${escapeHtml(categoryName)}</h1>
+      ${
+        subheading
+          ? `<p class="category-subtitle">${escapeHtml(subheading)}</p>`
+          : ""
+      }
       ${authorSections}
     </section>
   `;

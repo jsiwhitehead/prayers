@@ -21,7 +21,7 @@ type Prayer = {
 const prayers = rawPrayers as Record<string, Prayer[]>;
 
 const nearnessTests: Record<string, (string | RegExp)[]> = {
-  Adorning: [
+  Bestowal: [
     "unite",
     "we",
     "us",
@@ -135,7 +135,7 @@ const aidTests: Record<string, (string | RegExp)[]> = {
     "all abide",
     "source of bounty",
   ],
-  Grace: [""],
+  Shelter: [""],
 };
 
 const aidEntries = Object.entries(aidTests);
@@ -170,7 +170,7 @@ const teachingAwakening = teachingCategorised["Awakening"];
 delete teachingCategorised["Awakening"];
 
 const result = {
-  Majesty: prayers["Praise"],
+  Glory: prayers["Praise"],
   Awakening: teachingAwakening,
   ...nearnessCategorised,
   ...teachingCategorised,
