@@ -327,7 +327,7 @@ async function build() {
     <div class="app">
       <aside class="sidebar">
         <div class="sidebar-inner">
-          <h1 class="app-title">Prayers</h1>
+          <h1 class="app-title">Bahá’í Prayers</h1>
           <nav class="category-nav">
             ${sidebarLinksHtml}
           </nav>

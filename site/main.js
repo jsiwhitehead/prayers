@@ -29,11 +29,9 @@
   }
 
   function openFirstPrayerInActiveCategory() {
-    // Find currently active section, or fall back to the first section
     let activeSection = document.querySelector(".category-section.is-active");
     if (!activeSection) {
-      const allSections = document.querySelectorAll(".category-section");
-      activeSection = allSections[0];
+      activeSection = document.querySelector(".category-section");
     }
     if (!activeSection) return;
 
@@ -59,30 +57,81 @@
 
     links.forEach((link) => {
       link.addEventListener("click", () => {
-        const targetCategory = link.getAttribute("data-category");
+        const target = link.getAttribute("data-category");
 
-        // Update active link
         links.forEach((l) => l.classList.remove("is-active"));
         link.classList.add("is-active");
 
-        // Show matching section
         sections.forEach((section) => {
-          if (section.getAttribute("data-category") === targetCategory) {
+          if (section.getAttribute("data-category") === target) {
             section.classList.add("is-active");
           } else {
             section.classList.remove("is-active");
           }
         });
 
-        // Ensure a clean state, then open first prayer in the new category
         collapseAllPrayers();
         openFirstPrayerInActiveCategory();
 
-        // Scroll page back to the top when switching category
         window.scrollTo({ top: 0 });
       });
     });
   }
+
+  // -------------------------------------------------------------
+  // Sticky offset + scroll margin
+  // -------------------------------------------------------------
+
+  function isMobile() {
+    return window.matchMedia("(max-width: 768px)").matches;
+  }
+
+  function getCategoryTitleHeight() {
+    const el = document.querySelector(
+      ".category-section.is-active .category-title"
+    );
+    return el ? el.getBoundingClientRect().height : 0;
+  }
+
+  function getScrollMarginTop(el) {
+    const cs = getComputedStyle(el);
+    const px = parseFloat(cs.scrollMarginTop);
+    return Number.isNaN(px) ? 0 : px;
+  }
+
+  function scrollPrayerIntoView(prayerEl) {
+    const rect = prayerEl.getBoundingClientRect();
+
+    const totalOffset = isMobile()
+      ? getCategoryTitleHeight()
+      : getScrollMarginTop(prayerEl);
+
+    // Compute target scroll position
+    const targetY = window.scrollY + rect.top - totalOffset;
+
+    // Immediate jump, no smooth scrolling
+    window.scrollTo(0, targetY);
+  }
+
+  // -------------------------------------------------------------
+  // Tap category title (mobile) -> scroll to top
+  // -------------------------------------------------------------
+
+  function initCategoryTitleTapToTop() {
+    const titles = Array.from(document.querySelectorAll(".category-title"));
+
+    titles.forEach((title) => {
+      title.addEventListener("click", () => {
+        // Only perform this behavior on mobile layout
+        if (!isMobile()) return;
+
+        // Jump back to the very top so the top menu is fully visible
+        window.scrollTo(0, 0);
+      });
+    });
+  }
+
+  // -------------------------------------------------------------
 
   function initPrayers() {
     const prayerToggles = Array.from(
@@ -97,13 +146,9 @@
         const body = prayerEl.querySelector(".prayer-body");
         if (!body) return;
 
-        // 1) Close everything
         collapseAllPrayers();
-
-        // 2) Clear any text selection that was left behind
         clearTextSelection();
 
-        // 3) Open this one
         toggle.setAttribute("hidden", "");
         toggle.setAttribute("aria-expanded", "true");
         body.removeAttribute("hidden");
@@ -114,7 +159,7 @@
         const topVisible = rect.top >= 0 && rect.top < window.innerHeight;
 
         if (!topVisible) {
-          prayerEl.scrollIntoView({ block: "start" });
+          scrollPrayerIntoView(prayerEl);
         }
       });
     });
@@ -123,7 +168,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     initCategories();
     initPrayers();
-    // Ensure at least one prayer is open when the page loads
+    initCategoryTitleTapToTop(); // enable tap-to-top on sticky category header
     openFirstPrayerInActiveCategory();
   });
 })();
